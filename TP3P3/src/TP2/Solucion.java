@@ -16,27 +16,30 @@ public class Solucion {
 	private Solucion(Grafo g) 
 	{
 		instancia = g;
-		recorrido = new int[instancia.getSize()];
-		if(recorrido.length<3)	throw new IllegalArgumentException("Tamaño de instancia invalido");
+		recorrido = new int[instancia.getSize()+1];
+		if(recorrido.length<4)	throw new IllegalArgumentException("Tamaño de instancia invalido");
 		for(int i = 0; i < recorrido.length; i++)
 			recorrido[i] = -1;
-		longitud = Integer.MAX_VALUE;
+		longitud = 0;
 	}
 	
 	//Recorre todas las ciudades yendo a la mas cercana en cada iteracion
-	public Solucion recorridoGoloso(Grafo instancia)
+	public static Solucion recorridoGoloso(Grafo instancia)
 	{
 		Solucion ret = new Solucion(instancia);
 		
-		recorrido[0] = 0;
-		usados = new HashSet<Integer>();
-		usados.add(0);
+		ret.recorrido[0] = 0;
+		ret.usados = new HashSet<Integer>();
+		ret.usados.add(0);
 		
-		for(int i = 1; i < recorrido.length-1; i++)
-		{
-			recorrido[i] = ciudadMasCercana(i-1);
+		for(int i = 1; i < ret.recorrido.length-1; i++)
+		{	
+			ret.recorrido[i] = ret.ciudadMasCercana(i-1);
+			ret.longitud += instancia.pesoArista(ret.recorrido[i-1], ret.recorrido[i]);
 		}
-		recorrido[recorrido.length-1] = 0;
+
+		ret.recorrido[ret.recorrido.length-1] = 0;
+		ret.longitud += instancia.pesoArista(ret.recorrido[ret.recorrido.length-2], ret.recorrido[ret.recorrido.length-1]);
 		
 		return ret;
 	}
@@ -45,11 +48,11 @@ public class Solucion {
 	private int ciudadMasCercana(int desde){
 		int ret = -1;
 		int distanciaMinima = Integer.MAX_VALUE;
-		for(int i = 0; i < recorrido.length; i++)
+		for(int i = 0; i < instancia.getSize(); i++)
 		{
 			int distanciaConI = instancia.pesoArista(desde, i);
 			
-			if(!usados.contains(i) && distanciaConI<distanciaMinima){
+			if(!usados.contains(i) && distanciaConI<=distanciaMinima){
 				distanciaMinima = distanciaConI;
 				ret = i;
 			}
