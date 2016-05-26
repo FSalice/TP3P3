@@ -10,6 +10,7 @@ public class Solucion {
 	private int[] recorrido;
 	// Longitud del recorrido
 	private int longitud;
+	// blah TODO
 	private Set<Integer> usados;
 
 	// solucion "vacia"
@@ -58,6 +59,64 @@ public class Solucion {
 			}
 		}
 		usados.add(ret);
+		return ret;
+	}
+	
+	public Solucion mejor()
+	{
+		Solucion ret = clone();
+		return ret;
+	}
+	
+	void swap(int i, int j){
+		if(i>=recorrido.length || i<0)
+			throw new IndexOutOfBoundsException("indice i fuera de los limites: "+i);
+		if(j>=recorrido.length || j<0)
+			throw new IndexOutOfBoundsException("indice j fuera de los limites: "+j);
+		
+		longitud -= calcularLongitud(i);
+		longitud -= calcularLongitud(j);
+		
+		
+		
+		int aux = recorrido[i];
+		recorrido[i] = recorrido[j];
+		recorrido[j] = aux;
+		
+
+		longitud += calcularLongitud(i);
+		longitud += calcularLongitud(j);
+		
+		if(i==recorrido.length-1 || j==recorrido.length-1)
+			recorrido[0] = recorrido[recorrido.length-1];
+		if(i==0 || j==0)
+			recorrido[recorrido.length-1] = recorrido[0];
+	}
+
+	private int calcularLongitud(int i) {
+		int ret = 0;
+
+		if(i==0)
+			ret += instancia.pesoArista(recorrido[recorrido.length-1], recorrido[i]);
+		else
+			ret += instancia.pesoArista(recorrido[i-1], recorrido[i]);
+		
+		if(i==recorrido.length-1)
+			ret += instancia.pesoArista(recorrido[0], recorrido[i]);
+		else
+			ret += instancia.pesoArista(recorrido[+1], recorrido[i]);
+			
+		return ret;
+	}
+	
+	@Override
+	public Solucion clone(){
+		Solucion ret = new Solucion(instancia);
+		
+		for(int i = 0; i < recorrido.length; i++){
+			ret.recorrido[i] = recorrido[i];
+		}
+		ret.longitud = longitud;
 		return ret;
 	}
 	
