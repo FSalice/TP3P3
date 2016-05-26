@@ -190,4 +190,8 @@ public class Grafo implements Serializable {
 	public ArrayList<Ciudad> getEstaciones() {
 		return estaciones;
 	}
+	
+	public int getSize(){
+		return estaciones.size();
+	}
 }
