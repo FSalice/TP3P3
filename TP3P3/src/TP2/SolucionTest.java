@@ -14,19 +14,22 @@ public class SolucionTest
 	@Test
 	public void swapTest()
 	{
-		Grafo g = generarInstancia("4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1");
-		Solucion s = Solucion.recorridoGoloso(g); //"0,2,3,1"
-
-		assertEquals(s.getLongitud(),1+10+1+10);
-		s.swap(1, 2);//"0,3,2,1"
-		assertEquals(s.getLongitud(),10+10+10+10);
-		
-		assertEquals(s.getRecorrido()[0],0);
-		assertEquals(s.getRecorrido()[1],3);
-		assertEquals(s.getRecorrido()[2],2);
-		assertEquals(s.getRecorrido()[3],1);
+		chequearSwap("0,3,2,1","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",1,2);
+		chequearSwap("3,2,0,1","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",0,2);
+		chequearSwap("0,2,1,3","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",3,2);
+		chequearSwap("0,2,1,3","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",2,3);
+		chequearSwap("1,2,3,0","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",0,3);
+		chequearSwap("0,2,3,1","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",2,2);
 	}
-	
+	private void chequearSwap(String resultadoEsperado, String grafo, int i, int j)
+	{
+		int[] esperado = recorrido(resultadoEsperado);
+		Grafo g = generarInstancia(grafo);
+		Solucion s = Solucion.recorridoGoloso(g);
+		s.swap(i, j);
+		for(int indice = 0; indice < s.getRecorrido().length; indice++)
+			assertEquals(s.getRecorrido()[indice], esperado[indice]);
+	}
 	
 	@Test
 	public void longitudGolosoTest() 
