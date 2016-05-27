@@ -13,7 +13,7 @@ public class SolucionTest
 	
 	@Test
 	public void swapTest()
-	{
+	{				//0,2,3,1
 		chequearSwap("0,3,2,1","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",1,2);
 		chequearSwap("3,2,0,1","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",0,2);
 		chequearSwap("0,2,1,3","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",3,2);
@@ -27,8 +27,18 @@ public class SolucionTest
 		Grafo g = generarInstancia(grafo);
 		Solucion s = Solucion.recorridoGoloso(g);
 		s.swap(i, j);
-		for(int indice = 0; indice < s.getRecorrido().length; indice++)
+		int longitudReal=0;
+		int aristas = s.getRecorrido().length;
+		
+		for(int indice = 0; indice < aristas; indice++)
 			assertEquals(s.getRecorrido()[indice], esperado[indice]);
+		
+		
+		for(int indice = 1; indice < aristas; indice++)
+			longitudReal += g.pesoArista(s.getRecorrido()[indice-1], s.getRecorrido()[indice]);
+		longitudReal += g.pesoArista(s.getRecorrido()[aristas-1], s.getRecorrido()[0]);
+		
+		assertEquals(longitudReal, s.getLongitud());
 	}
 	
 	@Test
