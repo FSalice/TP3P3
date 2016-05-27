@@ -17,8 +17,8 @@ public class Solucion {
 	private Solucion(Grafo g) 
 	{
 		instancia = g;
-		recorrido = new int[instancia.getSize()+1];
-		if(recorrido.length<4)	throw new IllegalArgumentException("Tamaño de instancia invalido");
+		recorrido = new int[instancia.getSize()];
+		if(recorrido.length<3)	throw new IllegalArgumentException("Tamaño de instancia invalido");
 		for(int i = 0; i < recorrido.length; i++)
 			recorrido[i] = -1;
 		longitud = 0;
@@ -33,14 +33,13 @@ public class Solucion {
 		ret.usados = new HashSet<Integer>();
 		ret.usados.add(0);
 		
-		for(int i = 1; i < ret.recorrido.length-1; i++)
+		for(int i = 1; i < ret.recorrido.length; i++)
 		{	
 			ret.recorrido[i] = ret.ciudadMasCercana(i-1);
 			ret.longitud += instancia.pesoArista(ret.recorrido[i-1], ret.recorrido[i]);
 		}
 
-		ret.recorrido[ret.recorrido.length-1] = 0;
-		ret.longitud += instancia.pesoArista(ret.recorrido[ret.recorrido.length-2], ret.recorrido[ret.recorrido.length-1]);
+		ret.longitud += instancia.pesoArista(ret.recorrido[ret.recorrido.length-1], ret.recorrido[0]);
 		
 		return ret;
 	}
@@ -77,34 +76,26 @@ public class Solucion {
 		longitud -= calcularLongitud(i);
 		longitud -= calcularLongitud(j);
 		
-		
-		
 		int aux = recorrido[i];
 		recorrido[i] = recorrido[j];
 		recorrido[j] = aux;
-		
 
 		longitud += calcularLongitud(i);
 		longitud += calcularLongitud(j);
-		
-		if(i==recorrido.length-1 || j==recorrido.length-1)
-			recorrido[0] = recorrido[recorrido.length-1];
-		if(i==0 || j==0)
-			recorrido[recorrido.length-1] = recorrido[0];
 	}
 
-	private int calcularLongitud(int i) {
+	private int calcularLongitud(int indice) {
 		int ret = 0;
 
-		if(i==0)
-			ret += instancia.pesoArista(recorrido[recorrido.length-1], recorrido[i]);
+		if(indice==0)
+			ret += instancia.pesoArista(recorrido[recorrido.length-1], recorrido[indice]);
 		else
-			ret += instancia.pesoArista(recorrido[i-1], recorrido[i]);
+			ret += instancia.pesoArista(recorrido[indice-1], recorrido[indice]);
 		
-		if(i==recorrido.length-1)
-			ret += instancia.pesoArista(recorrido[0], recorrido[i]);
+		if(indice==recorrido.length-1)
+			ret += instancia.pesoArista(recorrido[0], recorrido[indice]);
 		else
-			ret += instancia.pesoArista(recorrido[+1], recorrido[i]);
+			ret += instancia.pesoArista(recorrido[indice+1], recorrido[indice]);
 			
 		return ret;
 	}
