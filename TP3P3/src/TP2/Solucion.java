@@ -10,11 +10,12 @@ public class Solucion {
 	private int[] recorrido;
 	// Longitud del recorrido
 	private int longitud;
-	// blah TODO
+	// variable global usada para verificar que no se repitan vertices en un recorrido
 	private Set<Integer> usados;
 
 	// solucion "vacia"
-	private Solucion(Grafo g) {
+	private Solucion(Grafo g) 
+	{
 		instancia = g;
 		recorrido = new int[instancia.getSize()];
 		if (recorrido.length < 3)
@@ -25,15 +26,18 @@ public class Solucion {
 	}
 
 	// Recorre todas las ciudades yendo a la mas cercana en cada iteracion
-	public static Solucion recorridoGoloso(Grafo instancia) {
+	public static Solucion recorridoGoloso(Grafo instancia, int inicial) 
+	{
 		Solucion ret = new Solucion(instancia);
 
-		ret.recorrido[0] = 0;
+		ret.recorrido[0] = inicial;
 		ret.usados = new HashSet<Integer>();
-		ret.usados.add(0);
+		ret.usados.add(inicial);
 
 		for (int i = 1; i < ret.recorrido.length; i++) {
-			ret.recorrido[i] = ret.ciudadMasCercana(i - 1);
+			int cercana = ret.ciudadMasCercana(i-1);
+			ret.usados.add(cercana);
+			ret.recorrido[i] = cercana;
 			ret.longitud += instancia.pesoArista(ret.recorrido[i - 1],
 					ret.recorrido[i]);
 		}
@@ -56,10 +60,30 @@ public class Solucion {
 				ret = i;
 			}
 		}
-		usados.add(ret);
 		return ret;
 	}
 
+	public static Solucion recorridoGolosoAleatorizado(Grafo instancia)
+	{
+		Solucion ret = new Solucion(instancia);
+
+		ret.recorrido[0] = 0;
+		ret.usados = new HashSet<Integer>();
+		ret.usados.add(0);
+
+		for (int i = 1; i < ret.recorrido.length; i++) {
+			ret.recorrido[i] = ret.ciudadMasCercana(i - 1);
+			ret.longitud += instancia.pesoArista(ret.recorrido[i - 1],
+					ret.recorrido[i]);
+		}
+
+		ret.longitud += instancia.pesoArista(
+				ret.recorrido[ret.recorrido.length - 1], ret.recorrido[0]);
+
+		return ret;
+	}
+
+	//TODO: necesitamos testear
 	public Solucion mejorSwap() {
 		Solucion ret = clone();
 		Solucion aux;
