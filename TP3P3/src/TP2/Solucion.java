@@ -1,6 +1,7 @@
 package TP2;
 
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 public class Solucion {
@@ -26,7 +27,7 @@ public class Solucion {
 	}
 
 	// Recorre todas las ciudades yendo a la mas cercana en cada iteracion
-	public static Solucion recorridoGoloso(Grafo instancia, int inicial) 
+	public static Solucion recorridoGoloso(Grafo instancia, int inicial, int cantidadAleatorias) 
 	{
 		Solucion ret = new Solucion(instancia);
 
@@ -35,7 +36,7 @@ public class Solucion {
 		ret.usados.add(inicial);
 
 		for (int i = 1; i < ret.recorrido.length; i++) {
-			int cercana = ret.ciudadMasCercana(i-1);
+			int cercana = ret.ciudadMasCercana(i-1, cantidadAleatorias);
 			ret.usados.add(cercana);
 			ret.recorrido[i] = cercana;
 			ret.longitud += instancia.pesoArista(ret.recorrido[i - 1],
@@ -49,40 +50,47 @@ public class Solucion {
 	}
 
 	// Retorna la ciudad mas cercana no utilizada antes
-	private int ciudadMasCercana(int desde) {
-		int ret = -1;
-		int distanciaMinima = Integer.MAX_VALUE;
-		for (int i = 0; i < instancia.getSize(); i++) {
-			int distanciaConI = instancia.pesoArista(desde, i);
-
-			if (!usados.contains(i) && distanciaConI <= distanciaMinima) {
-				distanciaMinima = distanciaConI;
-				ret = i;
-			}
-		}
-		return ret;
-	}
-
-	public static Solucion recorridoGolosoAleatorizado(Grafo instancia)
+	private int ciudadMasCercana(int desde, int cantidadAleatorias) 
 	{
-		Solucion ret = new Solucion(instancia);
 
-		ret.recorrido[0] = 0;
-		ret.usados = new HashSet<Integer>();
-		ret.usados.add(0);
+		if (cantidadAleatorias < 1)
+			throw new IllegalArgumentException(
+					"La cantidad de minimos aleatorios especificada es invalida:"
+							+ cantidadAleatorias);
 
-		for (int i = 1; i < ret.recorrido.length; i++) {
-			ret.recorrido[i] = ret.ciudadMasCercana(i - 1);
-			ret.longitud += instancia.pesoArista(ret.recorrido[i - 1],
-					ret.recorrido[i]);
+		int[] elegidos = new int[cantidadAleatorias];
+		int[] distanciasMinimas = new int[cantidadAleatorias];
+
+		for (int i = 0; i < cantidadAleatorias; i++) 
+		{
+			elegidos[i] = -1;
+			distanciasMinimas[i] = Integer.MAX_VALUE;
 		}
 
-		ret.longitud += instancia.pesoArista(
-				ret.recorrido[ret.recorrido.length - 1], ret.recorrido[0]);
+		for (int i = 0; i < instancia.getSize(); i++) 
+		{
+			int distanciaCiudadActual = instancia.pesoArista(desde, i);
 
-		return ret;
+			if (!usados.contains(i))
+				for (int j = 0; j < cantidadAleatorias; j++)
+					if (distanciaCiudadActual <= distanciasMinimas[j]) 
+					{
+						distanciasMinimas[j] = distanciaCiudadActual;
+						elegidos[j] = i;
+						j = cantidadAleatorias;// TODO: esto es un asco
+					}
+
+		}
+		int indiceMaximo = 0;
+		for (int i = 0; i < cantidadAleatorias; i++)
+			if (elegidos[i] != -1)
+				indiceMaximo = i;
+
+		Random r = new Random();
+
+		return elegidos[r.nextInt(indiceMaximo + 1)];
 	}
-
+	
 	//TODO: necesitamos testear
 	public Solucion mejorSwap() {
 		Solucion ret = clone();
