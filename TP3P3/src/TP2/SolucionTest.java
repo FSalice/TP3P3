@@ -38,7 +38,7 @@ public class SolucionTest
 			longitudReal += g.pesoArista(s.getRecorrido()[indice-1], s.getRecorrido()[indice]);
 		longitudReal += g.pesoArista(s.getRecorrido()[aristas-1], s.getRecorrido()[0]);
 		
-		assertEquals(longitudReal, s.getLongitud());
+		assertEquals(longitudReal, s.getLongitud(),0.000001);
 	}
 	
 	@Test
@@ -54,7 +54,7 @@ public class SolucionTest
 	{
 		Grafo g = generarInstancia(grafo);
 		Solucion s = Solucion.recorridoGoloso(g,0,1);
-		assertEquals(longitudEsperada,s.getLongitud());
+		assertEquals(longitudEsperada,s.getLongitud(),0.000001);
 	}
 	
 	@Test

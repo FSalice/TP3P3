@@ -11,7 +11,7 @@ public class Solucion {
 	// Recorrido representado en indices
 	private int[] recorrido;
 	// Longitud del recorrido
-	private int longitud;
+	private double longitud;
 	// variable global usada para verificar que no se repitan vertices en un recorrido
 	private Set<Integer> usados;
 
@@ -19,6 +19,15 @@ public class Solucion {
 	private Solucion(Grafo g) 
 	{
 		instancia = g.clonar();
+		
+		ArrayList<Ciudad> ciudades = instancia.getEstaciones();
+		for(int i = 0; i < ciudades.size(); i++)
+			for(int j = i; j < ciudades.size(); j++ )
+				if(!instancia.existeArista(i, j))
+				{
+//					int calculo = TODO :pitagoras
+//					instancia.agregarArista(i, j, calculo);
+				}
 		
 		recorrido = new int[instancia.getSize()];
 		if (recorrido.length < 3)
@@ -183,7 +192,7 @@ public class Solucion {
 		return ret;
 	}
 
-	public int getLongitud() {
+	public double getLongitud() {
 		return longitud;
 	}
 }

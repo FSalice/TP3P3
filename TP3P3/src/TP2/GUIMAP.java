@@ -782,16 +782,6 @@ public class GUIMAP {
 
 	private void caminoMinimo(boolean porPeso) {
 		mapa.removeMapPolygon(caminoMinimo);
-		int inicio = -1, destino = -1;
-		for (int i = 0; i < estaciones.size(); i++) {
-			if (estacionesSeleccionadas.get(i)) {
-				if (inicio == -1) {
-					inicio = i;
-				}
-				destino = i;
-			}
-		}
-		if (inicio != -1) {
 			if(porPeso)
 				caminoMinimoInt = Solucion.recorridoGoloso(grafo, 0, 5).getRecorridoList();
 			else
@@ -811,7 +801,6 @@ public class GUIMAP {
 				caminoMinimo.setColor(camino);
 				mapa.addMapPolygon(caminoMinimo);
 			}
-		}
 	}
 
 	private void agregarMarker(MapMarkerDot nuevoDot) {
