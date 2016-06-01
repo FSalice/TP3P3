@@ -149,4 +149,9 @@ public class Ciudad implements Serializable {//cambiaria estacion por ciudad la
 	public double getLon() {
 		return lon;
 	}
+
+	public Ciudad clonar() {
+		Ciudad ret = new Ciudad(getNombre(),getLat(),getLon());
+		return ret;
+	}
 }

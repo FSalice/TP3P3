@@ -792,8 +792,11 @@ public class GUIMAP {
 			}
 		}
 		if (inicio != -1) {
-			caminoMinimoInt = grafo.caminoMinimo(grafo.get(inicio),
-					grafo.get(destino), porPeso);
+			if(porPeso)
+				caminoMinimoInt = Solucion.recorridoGoloso(grafo, 0, 5).getRecorridoList();
+			else
+				caminoMinimoInt = Solucion.recorridoGoloso(grafo, 0, 5).mejorSwap().getRecorridoList();
+				
 			if (caminoMinimoInt != null) {
 				ArrayList<Coordinate> pol = new ArrayList<Coordinate>();
 				for (int i = 0; i < caminoMinimoInt.size(); i++) {

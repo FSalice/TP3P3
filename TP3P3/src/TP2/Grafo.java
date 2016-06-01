@@ -194,4 +194,13 @@ public class Grafo implements Serializable {
 	public int getSize(){
 		return estaciones.size();
 	}
+	
+	public Grafo clonar()
+	{
+		Grafo ret = new Grafo();
+		for(Ciudad c : estaciones)
+			ret.agregarEstacion(c.clonar());
+		
+		return ret;
+	}
 }

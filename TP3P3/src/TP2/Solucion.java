@@ -1,5 +1,6 @@
 package TP2;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -17,7 +18,8 @@ public class Solucion {
 	// solucion "vacia"
 	private Solucion(Grafo g) 
 	{
-		instancia = g;
+		instancia = g.clonar();
+		
 		recorrido = new int[instancia.getSize()];
 		if (recorrido.length < 3)
 			throw new IllegalArgumentException("Tamaño de instancia invalido");
@@ -26,7 +28,7 @@ public class Solucion {
 		longitud = 0;
 	}
 
-	// Recorre todas las ciudades yendo a la mas cercana en cada iteracion
+	// Recorre todas las ciudades yendo a una de las ciudades mas cercanas en cada iteracion
 	public static Solucion recorridoGoloso(Grafo instancia, int inicial, int cantidadAleatorias) 
 	{
 		Solucion ret = new Solucion(instancia);
@@ -68,10 +70,11 @@ public class Solucion {
 		}
 
 		for (int i = 0; i < instancia.getSize(); i++) 
-		{
-			int distanciaCiudadActual = instancia.pesoArista(desde, i);
+		{ 
 
 			if (!usados.contains(i))
+			{
+				int distanciaCiudadActual = instancia.pesoArista(desde, i);
 				for (int j = 0; j < cantidadAleatorias; j++)
 					if (distanciaCiudadActual <= distanciasMinimas[j]) 
 					{
@@ -79,7 +82,7 @@ public class Solucion {
 						elegidos[j] = i;
 						j = cantidadAleatorias;// TODO: esto es un asco
 					}
-
+			}
 		}
 		int indiceMaximo = 0;
 		for (int i = 0; i < cantidadAleatorias; i++)
@@ -91,8 +94,19 @@ public class Solucion {
 		return elegidos[r.nextInt(indiceMaximo + 1)];
 	}
 	
+	public Solucion mejorSwap(){
+		Solucion ret = this;
+		Solucion aux = this;
+		while(aux!=null)
+		{
+			ret = aux;
+			aux = aux.mejorarSwap();
+		}
+		return ret;
+	}
+	
 	//TODO: necesitamos testear
-	public Solucion mejorSwap() {
+	public Solucion mejorarSwap() {
 		Solucion ret = clone();
 		Solucion aux;
 		for (int i = 0; i < recorrido.length; i++)
@@ -104,6 +118,7 @@ public class Solucion {
 			}
 		return ret.getLongitud() < getLongitud() ? ret : null;
 	}
+	
 
 	void swap(int i, int j) {
 		chequearIndice(i);
@@ -158,6 +173,14 @@ public class Solucion {
 
 	public int[] getRecorrido() {
 		return recorrido;
+	}
+	
+	public ArrayList<Integer> getRecorridoList() {
+		ArrayList<Integer> ret = new ArrayList<Integer>();
+		for(int i : recorrido)
+			ret.add(i);
+		ret.add(recorrido[0]);
+		return ret;
 	}
 
 	public int getLongitud() {
