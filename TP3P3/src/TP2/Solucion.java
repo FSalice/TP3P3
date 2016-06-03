@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-public class Solucion {
+public class Solucion implements Comparable<Solucion>{
 
 	private Grafo instancia;
 	// Recorrido representado en indices
@@ -22,11 +22,13 @@ public class Solucion {
 		
 		ArrayList<Ciudad> ciudades = instancia.getEstaciones();
 		for(int i = 0; i < ciudades.size(); i++)
-			for(int j = i; j < ciudades.size(); j++ )
+			for(int j = i+1; j < ciudades.size(); j++ )
 				if(!instancia.existeArista(i, j))
 				{
-//					int calculo = TODO :pitagoras
-//					instancia.agregarArista(i, j, calculo);
+					double c_1 = Math.abs(ciudades.get(i).getLat()-ciudades.get(j).getLat());
+					double c_2 = Math.abs(ciudades.get(i).getLon()-ciudades.get(j).getLon());
+					double calculo = Math.sqrt(c_1*c_1 + c_2*c_2)*100000; 
+					instancia.agregarArista(i, j, (int) calculo);
 				}
 		
 		recorrido = new int[instancia.getSize()];
@@ -89,7 +91,7 @@ public class Solucion {
 					{
 						distanciasMinimas[j] = distanciaCiudadActual;
 						elegidos[j] = i;
-						j = cantidadAleatorias;// TODO: esto es un asco
+						j = cantidadAleatorias;
 					}
 			}
 		}
@@ -102,6 +104,7 @@ public class Solucion {
 
 		return elegidos[r.nextInt(indiceMaximo + 1)];
 	}
+
 	
 	public Solucion mejorSwap(){
 		Solucion ret = this;
@@ -195,4 +198,25 @@ public class Solucion {
 	public double getLongitud() {
 		return longitud;
 	}
+
+	@Override
+	public int compareTo(Solucion o) {
+		if(getLongitud()>o.getLongitud()) return 1;
+		if(getLongitud()<o.getLongitud()) return 0;
+		return -1;
+	}
+	
+	@Override
+	public String toString()
+	{
+		String ret = "[";
+		for(int i : recorrido)
+			ret += i;
+		ret+="]";
+		
+		ret+= " - " + getLongitud();
+		
+		return ret;
+	}
+	
 }
