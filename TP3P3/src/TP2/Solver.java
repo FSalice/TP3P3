@@ -9,6 +9,7 @@ public class Solver implements Runnable {
 	private int iteraciones, cantAleatorias;
 	private Solucion mejorHastaAhora;
 	private Thread t;
+	public enum Algoritmo {busquedaLocal, evolutivo};
 
 	public Solver(Grafo instancia, int solucionesIniciales, int cantidadAleatorias, GUIMAP interfaz)
 	{
@@ -23,18 +24,19 @@ public class Solver implements Runnable {
 	public void run() 
 	{
 		mejorHastaAhora = Solucion.recorridoGoloso(instancia);
+		System.out.println(mejorHastaAhora.getLongitud());
 		Solucion aux;
-		
+		int iteracion = 0;
 		for (int i = 0; i != iteraciones && !parar; i++)
 		{
-			System.out.println("falta: "+(iteraciones-i));
 			aux = Solucion.recorridoGolosoAleatorizado(instancia, 0, cantAleatorias);
 			while (aux != null && !parar) 
-			{
+			{	
+				iteracion++;
+				interfaz.setAvance(iteracion, aux.getLongitud(), Algoritmo.busquedaLocal);
 				if(aux.getLongitud()<mejorHastaAhora.getLongitud())
 				{
 					mejorHastaAhora = aux;
-					interfaz.setAvance(mejorHastaAhora.getLongitud());
 				}
 				aux = aux.mejorarSwap();
 			}

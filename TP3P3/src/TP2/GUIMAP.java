@@ -33,6 +33,14 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.MapMarkerCircle;
@@ -40,6 +48,8 @@ import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
 import org.openstreetmap.gui.jmapviewer.MapPolygonImpl;
 import org.openstreetmap.gui.jmapviewer.interfaces.MapMarker;
 import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
+
+import TP2.Solver.Algoritmo;
 
 public class GUIMAP {
 
@@ -73,14 +83,19 @@ public class GUIMAP {
 	private final Color camino = Color.red;
 	private final Color noSelec = Color.green;
 	private final Color selec = Color.blue;
-	private JLabel lblMensaje;
 	private JPanel panelMensaje;
+	private JLabel lblMensaje;
+	private JPanel panelGrafico;
+	private JFreeChart grafico;
 	private JButton btnEditar;
 	private ArrayList<Integer> solucionActual = new ArrayList<Integer>();
 	private Solver solver;
 	private JButton btnBLocal;
 	private JButton btnStop;
 	private JLabel lblActual;
+	private XYSeries busquedaLocal;
+	private XYSeries algoritmoEvolutivo;
+	private XYSeries algoritmoGoloso;
 	
 	public static void main(String[] args) 
 	{
@@ -182,9 +197,11 @@ public class GUIMAP {
 		inputPeso.setAlignmentY(Component.BOTTOM_ALIGNMENT);
 		inputPeso.setRequestFocusEnabled(false);
 		
-		frame.addFocusListener(new FocusAdapter() {
+		frame.addFocusListener(new FocusAdapter() 
+		{
 			@Override
-			public void focusLost(FocusEvent e) {
+			public void focusLost(FocusEvent e) 
+			{
 				frame.requestFocus();
 			}
 		});
@@ -201,9 +218,11 @@ public class GUIMAP {
 		btnEliminar.setFocusable(false);
 		btnEliminar.setToolTipText("Eliminar todos los elementos seleccionados(Supr/Delete)");
 		toolBar.add(btnEliminar);
-		btnEliminar.addActionListener(new ActionListener() {
+		btnEliminar.addActionListener(new ActionListener() 
+		{
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) 
+			{
 				eliminar();
 			}
 		});
@@ -217,8 +236,10 @@ public class GUIMAP {
 		toolBar.add(btnEditar);
 		
 		JButton btnAGoloso = new JButton("A. Goloso");
-		btnAGoloso.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {//TODO: esto es un asco
+		btnAGoloso.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent arg0) 
+			{//TODO: esto es un asco
 				solucionActual = Solucion.recorridoGoloso(grafo).getRecorridoList();
 				List<Coordinate> lista = new ArrayList<Coordinate>();
 				for(Integer i : solucionActual)
@@ -236,8 +257,13 @@ public class GUIMAP {
 		toolBar.add(btnAGoloso);
 		
 		btnBLocal = new JButton("B. Local");
-		btnBLocal.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
+		btnBLocal.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent arg0) 
+			{	
+				if(solver != null)
+					solver.stop();	
+				clearDataset();
 				solver = new Solver(grafo, 100, 5, _this);
 				solver.start();
 			}
@@ -250,8 +276,10 @@ public class GUIMAP {
 		toolBar.add(btnBLocal);
 		
 		btnStop = new JButton("Stop");
-		btnStop.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		btnStop.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{
 				solucionActual = solver.stop().getRecorridoList();
 				List<Coordinate> lista = new ArrayList<Coordinate>();
 				for(Integer i : solucionActual)
@@ -268,35 +296,39 @@ public class GUIMAP {
 		btnStop.setAlignmentY(1.0f);
 		toolBar.add(btnStop);
 
-		btnEditar.addActionListener(new ActionListener() {
-
+		btnEditar.addActionListener(new ActionListener() 
+		{
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) 
+			{
 				editar();
 			}
 		});
-
-		btnNuevoTramo.addActionListener(new ActionListener() {
-
+		btnNuevoTramo.addActionListener(new ActionListener() 
+		{
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
+			public void actionPerformed(ActionEvent arg0) 
+			{
 				nuevoTramo();
 			}
 		});
-
-		btnNuevaEstacion.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
+		btnNuevaEstacion.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent arg0) 
+			{
 				nuevaEstacion();
 			}
 		});
-
-		mapa.addMouseMotionListener(new MouseAdapter() {
+		mapa.addMouseMotionListener(new MouseAdapter() 
+		{
 			@Override
-			public void mouseMoved(MouseEvent e) {
+			public void mouseMoved(MouseEvent e) 
+			{
 				actualizarEstado(mapa.getPosition(e.getPoint()));
 			}
 		});
-		mapa.addMouseListener(new MouseAdapter() {
+		mapa.addMouseListener(new MouseAdapter() 
+		{
 			@Override
 			public void mousePressed(MouseEvent e) 
 			{
@@ -364,14 +396,32 @@ public class GUIMAP {
 		mapa.setFocusable(false);
 
 		panelMensaje = new JPanel();
-		panelMensaje.setBounds(41, 11, 256, 51);
+		panelMensaje.setBounds(50, 11, 256, 51);
 		panelMensaje.setBorder(new BevelBorder(BevelBorder.RAISED, null, null,
 				null, null));
 		panelMensaje.setVisible(false);
 		mapa.setLayout(null);
 		mapa.add(panelMensaje);
 		panelMensaje.setLayout(null);
+		
 
+		grafico = org.jfree.chart.ChartFactory.createXYLineChart("grafico", "x", "y", createDataset(), PlotOrientation.VERTICAL, true, true, false);
+		XYPlot plot = grafico.getXYPlot();
+		XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+		
+		plot.setRenderer(renderer);
+		panelGrafico = new ChartPanel(grafico);
+		panelGrafico.setBounds(50, 73, 256, 160);
+		panelGrafico.setBorder(new BevelBorder(BevelBorder.RAISED, null, null,
+				null, null));
+		panelGrafico.setVisible(true);
+		mapa.setLayout(null);
+		mapa.add(panelGrafico);
+		panelGrafico.setLayout(null);
+		
+		
+		
+		
 		JLabel lblIconoInfo = new JLabel("");
 		lblIconoInfo.setBounds(7, 8, 32, 32);
 		lblIconoInfo.setIcon(UIManager.getIcon("OptionPane.warningIcon"));
@@ -409,9 +459,11 @@ public class GUIMAP {
 		frame.setFocusable(true);
 		frame.addKeyListener(new KeyListenerGlobal());
 
-		t = new Timer(1000 * 5, new ActionListener() {
+		t = new Timer(1000 * 5, new ActionListener() 
+		{
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) 
+			{
 				panelMensaje.setVisible(false);
 			}
 		});
@@ -446,17 +498,18 @@ public class GUIMAP {
 
 	
 	//TODO: mejorar
-	public void lanzarJuego() {
-		
-		if (ciudades.size() > 2) {	
-			
+	public void lanzarJuego() 
+	{	
+		if (ciudades.size() > 2) 
+		{		
 			ArrayList<Point> s = new ArrayList<Point>();
 			for (int i = 0; i < ciudades.size(); i++)
 				s.add(mapa.getMapPosition(ciudades.get(i).getCoordinate(),false));
 
 			String[] args = new String[s.size()];
 			double[] coordenadas = new double[4];
-			for (int i = 0; i < s.size() - 1; i++) {
+			for (int i = 0; i < s.size() - 1; i++) 
+			{
 				coordenadas[0] = s.get(i).getX();
 				coordenadas[1] = s.get(i).getY();
 				coordenadas[2] = s.get(i+1).getX();
@@ -530,9 +583,8 @@ public class GUIMAP {
 	//Actualiza la barra de estado y los graficos del mapa
 	private void actualizarEstado(Coordinate pos)
 	{
-		if (finArista) {
+		if (finArista)
 			aristaAux.set(1, new Coordinate(pos.getLat(), pos.getLon()));
-		}
 		lblLatitud.setText("    Latitud: " + pos.getLat());
 		lblLongitud.setText("    Longitud: " + pos.getLon());
 		actualizarEstado();
@@ -703,13 +755,10 @@ public class GUIMAP {
 		pesos.set(i, nuevo);
 	}
 
-	public void setAvance(double avance) 
-	{
-		lblActual.setText("Actual : "+ avance);
-	}
 
 	//Elimina todas las ciudades seleccionadas y las aristas afectadas o seleccionadas
-	private void eliminar() {
+	private void eliminar() 
+	{
 		for (int i = ciudades.size() - 1; i >= 0; i--) if (estacionesSeleccionadas.get(i)) 
 			{
 				for (int j = aristas.size() - 1; j >= 0; j--) if (esAristaAfectada(ciudades.get(i), aristas.get(j))) 
@@ -737,7 +786,8 @@ public class GUIMAP {
 		contadorSeleccionados = 0;
 	}
 	//Devuelve true si la ciudad es parte de la arista
-	private boolean esAristaAfectada(MapMarker ciudad, MapPolygon arista) {
+	private boolean esAristaAfectada(MapMarker ciudad, MapPolygon arista) 
+	{
 				//la ciudad es el inicio de la arista
 		return  (arista.getPoints().get(0).getLat() == ciudad.getCoordinate().getLat() &&
 				 arista.getPoints().get(0).getLon() == ciudad.getCoordinate().getLon())|| 
@@ -762,7 +812,8 @@ public class GUIMAP {
 		}
 	}
 	//Invoca un cuadro de dialogo para editar la ciudad
-	private void editarCiudad(int i) {
+	private void editarCiudad(int i) 
+	{
 		int eleccion = JOptionPane.showConfirmDialog(null,
 				panelEditarCiudad, "Editar estacion",
 				JOptionPane.OK_CANCEL_OPTION);
@@ -786,7 +837,8 @@ public class GUIMAP {
 		}
 	}
 	//Invoca un cuadro de dialogo para editar la arista
-	private void editarArista(int i) {
+	private void editarArista(int i) 
+	{
 		try 
 		{
 			int nuevoPeso = Integer.parseInt(JOptionPane
@@ -829,14 +881,46 @@ public class GUIMAP {
 		}
 		finArista = false;
 	}
-	private void nuevaEstacion() {
+	private void nuevaEstacion() 
+	{
 		agregandoEstacion = !agregandoEstacion;
 		btnNuevaEstacion.setText(agregandoEstacion? "      Cancelar     ":"Nueva Estacion");
 	}
 	
 	//Serializa el grafo y lo guarda en un archivo
-	private void cerrar() {
+	private void cerrar() 
+	{
 		FileManager.guardarGrafo(grafo);
 		frame.dispose();
 	}
+
+	public void setAvance(int iteracion, double y, Algoritmo usado)
+	{
+		if(algoritmoGoloso.getItemCount()==2)
+		{
+			double aux = algoritmoGoloso.remove(1).getYValue();
+			algoritmoGoloso.add(iteracion, aux);
+		}
+		
+		if(usado==Algoritmo.busquedaLocal)
+		{
+			busquedaLocal.add(iteracion, y);
+		}
+	}
+	private void clearDataset()
+	{
+		algoritmoGoloso.clear();
+		busquedaLocal.clear();
+		algoritmoEvolutivo.clear();
+	}
+	private XYDataset createDataset()
+	   {
+		algoritmoGoloso = new XYSeries("A. Goloso");
+		busquedaLocal = new XYSeries("B. Local");
+		algoritmoEvolutivo = new XYSeries("A. Evolutivo");
+		XYSeriesCollection dataset = new XYSeriesCollection();
+		dataset.addSeries(busquedaLocal);
+		dataset.addSeries(algoritmoEvolutivo);
+		return dataset;
+	   }
 }

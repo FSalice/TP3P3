@@ -28,7 +28,7 @@ public class Solucion implements Comparable<Solucion>{
 					double c_1 = Math.abs(ciudades.get(i).getLat()-ciudades.get(j).getLat());
 					double c_2 = Math.abs(ciudades.get(i).getLon()-ciudades.get(j).getLon());
 					double calculo = (Math.sqrt(c_1*c_1 + c_2*c_2)); 
-					instancia.agregarArista(i, j, (int) calculo);
+					instancia.agregarArista(i, j, (int) (calculo*111));
 				}
 		
 		recorrido = new int[instancia.getSize()];
@@ -52,11 +52,11 @@ public class Solucion implements Comparable<Solucion>{
 			int cercana = ret.ciudadMasCercana(i-1, cantidadAleatorias);
 			ret.usados.add(cercana);
 			ret.recorrido[i] = cercana;
-			ret.longitud += instancia.pesoArista(ret.recorrido[i - 1],
+			ret.longitud += ret.instancia.pesoArista(ret.recorrido[i - 1],
 					ret.recorrido[i]);
 		}
 
-		ret.longitud += instancia.pesoArista(
+		ret.longitud += ret.instancia.pesoArista(
 				ret.recorrido[ret.recorrido.length - 1], ret.recorrido[0]);
 
 		return ret;
@@ -129,7 +129,10 @@ public class Solucion implements Comparable<Solucion>{
 				aux = clone();
 				aux.swap(i, j);
 				if (ret.getLongitud() > aux.getLongitud())
+				{
 					ret = aux;
+					i=j=recorrido.length;
+				}
 			}
 		return ret.getLongitud() < getLongitud() ? ret : null;
 	}
