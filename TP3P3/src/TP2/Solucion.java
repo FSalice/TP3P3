@@ -27,7 +27,7 @@ public class Solucion implements Comparable<Solucion>{
 				{
 					double c_1 = Math.abs(ciudades.get(i).getLat()-ciudades.get(j).getLat());
 					double c_2 = Math.abs(ciudades.get(i).getLon()-ciudades.get(j).getLon());
-					double calculo = Math.sqrt(c_1*c_1 + c_2*c_2)*100000; 
+					double calculo = (Math.sqrt(c_1*c_1 + c_2*c_2)); 
 					instancia.agregarArista(i, j, (int) calculo);
 				}
 		
@@ -40,7 +40,7 @@ public class Solucion implements Comparable<Solucion>{
 	}
 
 	// Recorre todas las ciudades yendo a una de las ciudades mas cercanas en cada iteracion
-	public static Solucion recorridoGoloso(Grafo instancia, int inicial, int cantidadAleatorias) 
+	public static Solucion recorridoGolosoAleatorizado(Grafo instancia, int inicial, int cantidadAleatorias) 
 	{
 		Solucion ret = new Solucion(instancia);
 
@@ -62,6 +62,9 @@ public class Solucion implements Comparable<Solucion>{
 		return ret;
 	}
 
+	public static Solucion recorridoGoloso(Grafo instancia){
+		return recorridoGolosoAleatorizado(instancia, 0 ,1);
+	}
 	// Retorna la ciudad mas cercana no utilizada antes
 	private int ciudadMasCercana(int desde, int cantidadAleatorias) 
 	{

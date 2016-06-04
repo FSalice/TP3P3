@@ -25,7 +25,7 @@ public class SolucionTest
 	{
 		int[] esperado = recorrido(resultadoEsperado);
 		Grafo g = generarInstancia(grafo);
-		Solucion s = Solucion.recorridoGoloso(g,0,1);
+		Solucion s = Solucion.recorridoGolosoAleatorizado(g,0,1);
 		s.swap(i, j);
 		int longitudReal=0;
 		int aristas = s.getRecorrido().length;
@@ -53,7 +53,7 @@ public class SolucionTest
 	private void chequearLongitudGoloso(int longitudEsperada, String grafo)
 	{
 		Grafo g = generarInstancia(grafo);
-		Solucion s = Solucion.recorridoGoloso(g,0,1);
+		Solucion s = Solucion.recorridoGolosoAleatorizado(g,0,1);
 		assertEquals(longitudEsperada,s.getLongitud(),0.000001);
 	}
 	
@@ -68,7 +68,7 @@ public class SolucionTest
 	private void chequearRecorridoGoloso(String recorridoEsperado, String grafo)
 	{
 		Grafo g = generarInstancia(grafo);
-		Solucion s = Solucion.recorridoGoloso(g,0,1);
+		Solucion s = Solucion.recorridoGolosoAleatorizado(g,0,1);
 		int[] esperado = recorrido(recorridoEsperado);
 		int[] obtenido = s.getRecorrido();
 		

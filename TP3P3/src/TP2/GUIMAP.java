@@ -43,15 +43,16 @@ import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 
 public class GUIMAP {
 
+	private GUIMAP _this;
 	private JFrame frame;
-	private JPanel panelEditarEstacion;
+	private JPanel panelEditarCiudad;
 	private JMapViewer mapa = new JMapViewer();
 	private Grafo grafo = FileManager.cargarGrafo();
 	private boolean agregandoEstacion, inicioArista, finArista;
 	private int indiceInicioArista, indiceFinArista, contadorSeleccionados;
 	private ArrayList<Coordinate> aristaAux;
 
-	private List<MapMarker> estaciones = new ArrayList<MapMarker>();
+	private List<MapMarker> ciudades = new ArrayList<MapMarker>();
 	private List<MapPolygon> aristas = new ArrayList<MapPolygon>();
 	private List<MapMarker> pesos = new ArrayList<MapMarker>();
 	private ArrayList<Boolean> estacionesSeleccionadas = new ArrayList<Boolean>();
@@ -69,14 +70,17 @@ public class GUIMAP {
 	private JToolBar toolBar;
 	private Timer t;
 	private final int radioTolerancia = 6;
-	@SuppressWarnings("unused")
 	private final Color camino = Color.red;
 	private final Color noSelec = Color.green;
 	private final Color selec = Color.blue;
 	private JLabel lblMensaje;
 	private JPanel panelMensaje;
 	private JButton btnEditar;
-	
+	private ArrayList<Integer> solucionActual = new ArrayList<Integer>();
+	private Solver solver;
+	private JButton btnBLocal;
+	private JButton btnStop;
+	private JLabel lblActual;
 	
 	public static void main(String[] args) 
 	{
@@ -111,6 +115,7 @@ public class GUIMAP {
 		{
 			e1.printStackTrace();
 		}
+		_this = this;
 		frame = new JFrame();
 		frame.setBounds(100, 100, 1081, 496);
 		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -210,6 +215,58 @@ public class GUIMAP {
 				.getColor("Button.background"), null, null));
 		btnEditar.setFocusable(false);
 		toolBar.add(btnEditar);
+		
+		JButton btnAGoloso = new JButton("A. Goloso");
+		btnAGoloso.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {//TODO: esto es un asco
+				solucionActual = Solucion.recorridoGoloso(grafo).getRecorridoList();
+				List<Coordinate> lista = new ArrayList<Coordinate>();
+				for(Integer i : solucionActual)
+					lista.add(new Coordinate(grafo.get(i).getLat(),grafo.get(i).getLon()));
+				MapPolygonImpl recorrido = new MapPolygonImpl(lista);
+				recorrido.setColor(Color.cyan);
+				mapa.addMapPolygon(recorrido);
+			}
+		});
+		btnAGoloso.setFocusable(false);
+		btnAGoloso.setBorder(new BevelBorder(BevelBorder.RAISED, UIManager
+						.getColor("Button.background"), UIManager
+						.getColor("Button.background"), null, null));
+		btnAGoloso.setAlignmentY(1.0f);
+		toolBar.add(btnAGoloso);
+		
+		btnBLocal = new JButton("B. Local");
+		btnBLocal.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				solver = new Solver(grafo, 100, 5, _this);
+				solver.start();
+			}
+		});
+		btnBLocal.setFocusable(false);
+		btnBLocal.setBorder(new BevelBorder(BevelBorder.RAISED, UIManager
+								.getColor("Button.background"), UIManager
+								.getColor("Button.background"), null, null));
+		btnBLocal.setAlignmentY(1.0f);
+		toolBar.add(btnBLocal);
+		
+		btnStop = new JButton("Stop");
+		btnStop.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				solucionActual = solver.stop().getRecorridoList();
+				List<Coordinate> lista = new ArrayList<Coordinate>();
+				for(Integer i : solucionActual)
+					lista.add(new Coordinate(grafo.get(i).getLat(),grafo.get(i).getLon()));
+				MapPolygonImpl recorrido = new MapPolygonImpl(lista);
+				recorrido.setColor(camino);
+				mapa.addMapPolygon(recorrido);
+			}
+		});
+		btnStop.setFocusable(false);
+		btnStop.setBorder(new BevelBorder(BevelBorder.RAISED, UIManager
+										.getColor("Button.background"), UIManager
+										.getColor("Button.background"), null, null));
+		btnStop.setAlignmentY(1.0f);
+		toolBar.add(btnStop);
 
 		btnEditar.addActionListener(new ActionListener() {
 
@@ -269,7 +326,7 @@ public class GUIMAP {
 				{
 					if (ciudadCercana != null) 
 					{
-						indiceInicioArista = estaciones.indexOf(ciudadCercana);
+						indiceInicioArista = ciudades.indexOf(ciudadCercana);
 						aristaAux = new ArrayList<Coordinate>();
 						aristaAux.add(new Coordinate(ciudadCercana.getLat(), ciudadCercana.getLon()));
 						aristaAux.add(new Coordinate(ciudadCercana.getLat(), ciudadCercana.getLon()));
@@ -282,13 +339,13 @@ public class GUIMAP {
 				} 
 				else if (finArista && ciudadCercana != null) 
 					{
-						indiceFinArista = estaciones.indexOf(ciudadCercana);
+						indiceFinArista = ciudades.indexOf(ciudadCercana);
 						if (indiceInicioArista != indiceFinArista) 
 						{
 							if (grafo.agregarArista(indiceInicioArista, indiceFinArista, (Integer) inputPeso.getValue())) 
 							{
-								aristaAux.set(1, new Coordinate(estaciones.get(indiceFinArista).getLat(),
-										estaciones.get(indiceFinArista).getLon()));
+								aristaAux.set(1, new Coordinate(ciudades.get(indiceFinArista).getLat(),
+										ciudades.get(indiceFinArista).getLon()));
 								agregarPeso(aristaAux,
 										(Integer) inputPeso.getValue());
 								aristaAux = null;
@@ -327,6 +384,9 @@ public class GUIMAP {
 		barraDeEstado = new JToolBar();
 		barraDeEstado.setFloatable(false);
 		frame.getContentPane().add(barraDeEstado, BorderLayout.SOUTH);
+		
+		lblActual = new JLabel("Actual: 0");
+		barraDeEstado.add(lblActual);
 
 		lblEstaciones = new JLabel("Estaciones: 0");
 		barraDeEstado.add(lblEstaciones);
@@ -340,10 +400,10 @@ public class GUIMAP {
 		lblLongitud = new JLabel("    Longitud:");
 		barraDeEstado.add(lblLongitud);
 
-		panelEditarEstacion = new JPanel();
-		panelEditarEstacion.add(new JLabel("Nombre: "));
-		panelEditarEstacion.add(editarNombreEstacion);
-		panelEditarEstacion.add(new JLabel("Linea: "));
+		panelEditarCiudad = new JPanel();
+		panelEditarCiudad.add(new JLabel("Nombre: "));
+		panelEditarCiudad.add(editarNombreEstacion);
+		panelEditarCiudad.add(new JLabel("Linea: "));
 
 		mapa.setZoom(4, new Point(2, 2));
 		frame.setFocusable(true);
@@ -388,11 +448,11 @@ public class GUIMAP {
 	//TODO: mejorar
 	public void lanzarJuego() {
 		
-		if (estaciones.size() > 2) {	
+		if (ciudades.size() > 2) {	
 			
 			ArrayList<Point> s = new ArrayList<Point>();
-			for (int i = 0; i < estaciones.size(); i++)
-				s.add(mapa.getMapPosition(estaciones.get(i).getCoordinate(),false));
+			for (int i = 0; i < ciudades.size(); i++)
+				s.add(mapa.getMapPosition(ciudades.get(i).getCoordinate(),false));
 
 			String[] args = new String[s.size()];
 			double[] coordenadas = new double[4];
@@ -454,7 +514,7 @@ public class GUIMAP {
 	{
 		MapMarker ret = null;
 		Point posicionEnMapa;
-		for (MapMarker i : estaciones) 
+		for (MapMarker i : ciudades) 
 		{
 			posicionEnMapa = mapa.getMapPosition(i.getCoordinate(), false);
 			if (posicionEnMapa != null
@@ -479,7 +539,7 @@ public class GUIMAP {
 	}
 	private void actualizarEstado() 
 	{
-		lblEstaciones.setText("Estaciones: " + estaciones.size());
+		lblEstaciones.setText("Estaciones: " + ciudades.size());
 		lblTramos.setText("   Tramo: " + grafo.getAristas());
 		mapa.repaint();
 	}
@@ -490,7 +550,7 @@ public class GUIMAP {
 		MapMarker aux = buscarCiudadCercana(pos);
 		if (aux != null) 
 		{
-			int index = estaciones.indexOf(aux);
+			int index = ciudades.indexOf(aux);
 			estacionesSeleccionadas.set(index,!estacionesSeleccionadas.get(index));
 			aux.getStyle().setBackColor(estacionesSeleccionadas.get(index) ? selec : noSelec);
 			contadorSeleccionados += estacionesSeleccionadas.get(index) ? 1 : -1;
@@ -610,13 +670,13 @@ public class GUIMAP {
 	private void agregarMarker(MapMarkerDot nuevoDot) 
 	{
 		nuevoDot.getStyle().setBackColor(noSelec);
-		estaciones.add(nuevoDot);
+		ciudades.add(nuevoDot);
 		mapa.addMapMarker(nuevoDot);
 		estacionesSeleccionadas.add(false);
 	}
 	private void eliminarMarker(int i) 
 	{
-		mapa.removeMapMarker(estaciones.remove(i));
+		mapa.removeMapMarker(ciudades.remove(i));
 	}	
 
 	//Agrega un marker sin imagen, pero que muestra el peso en medio de la arista
@@ -645,14 +705,14 @@ public class GUIMAP {
 
 	public void setAvance(double avance) 
 	{
-		//TODO: implementar/cambiar al patron de observer
+		lblActual.setText("Actual : "+ avance);
 	}
 
 	//Elimina todas las ciudades seleccionadas y las aristas afectadas o seleccionadas
 	private void eliminar() {
-		for (int i = estaciones.size() - 1; i >= 0; i--) if (estacionesSeleccionadas.get(i)) 
+		for (int i = ciudades.size() - 1; i >= 0; i--) if (estacionesSeleccionadas.get(i)) 
 			{
-				for (int j = aristas.size() - 1; j >= 0; j--) if (esAristaAfectada(estaciones.get(i), aristas.get(j))) 
+				for (int j = aristas.size() - 1; j >= 0; j--) if (esAristaAfectada(ciudades.get(i), aristas.get(j))) 
 					{
 						if (!aristasSeleccionadas.get(j))
 							contadorSeleccionados++;
@@ -694,7 +754,7 @@ public class GUIMAP {
 			for (int i = 0; i < aristas.size(); i++) if (aristasSeleccionadas.get(i))
 					editarArista(i);
 			
-			for (int i = 0; i < estaciones.size(); i++) if (estacionesSeleccionadas.get(i)) 
+			for (int i = 0; i < ciudades.size(); i++) if (estacionesSeleccionadas.get(i)) 
 					editarCiudad(i);
 			
 			contadorSeleccionados = 0;
@@ -704,23 +764,23 @@ public class GUIMAP {
 	//Invoca un cuadro de dialogo para editar la ciudad
 	private void editarCiudad(int i) {
 		int eleccion = JOptionPane.showConfirmDialog(null,
-				panelEditarEstacion, "Editar estacion",
+				panelEditarCiudad, "Editar estacion",
 				JOptionPane.OK_CANCEL_OPTION);
 		if (eleccion == JOptionPane.OK_OPTION) 
 		{
 			grafo.editarEstacion(i,
 					editarNombreEstacion.getText());
-			MapMarker anterior = estaciones.get(i);
+			MapMarker anterior = ciudades.get(i);
 			MapMarker nueva = new MapMarkerDot(
 					editarNombreEstacion.getText(),
-					new Coordinate(estaciones.get(i).getLat(),
-							estaciones.get(i).getLon()));
-			estaciones.set(i, nueva);
+					new Coordinate(ciudades.get(i).getLat(),
+							ciudades.get(i).getLon()));
+			ciudades.set(i, nueva);
 
 			mapa.getMapMarkerList().set(
 					mapa.getMapMarkerList().indexOf(anterior),
 					nueva);
-			estaciones.get(i).getStyle().setBackColor(noSelec);
+			ciudades.get(i).getStyle().setBackColor(noSelec);
 			editarNombreEstacion.setText("");
 			estacionesSeleccionadas.set(i, false);
 		}
