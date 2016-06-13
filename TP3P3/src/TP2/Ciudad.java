@@ -64,16 +64,18 @@ public class Ciudad implements Serializable {//cambiaria estacion por ciudad la
 		return vecinos.contains(otro);
 	}
 
-	public Integer pesoArista(Ciudad otro) {
+	public int pesoArista(Ciudad otro) {
 		if (vecinos.contains(otro))
 			return pesos.get(vecinos.indexOf(otro));
 		else
 			return Integer.MAX_VALUE;
 	}
 
-	public boolean agregarArista(Ciudad j, Integer peso) {
+	public boolean agregarArista(Ciudad j, Integer peso) 
+	{
 		boolean ret = !vecinos.contains(j);
-		if(ret){
+		if(ret)
+		{
 		vecinos.add(j);
 		pesos.add(peso);
 		}
@@ -152,6 +154,7 @@ public class Ciudad implements Serializable {//cambiaria estacion por ciudad la
 
 	public Ciudad clonar() {
 		Ciudad ret = new Ciudad(getNombre(),getLat(),getLon());
+		
 		return ret;
 	}
 }

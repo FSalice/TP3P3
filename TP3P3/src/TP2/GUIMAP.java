@@ -49,8 +49,6 @@ import org.openstreetmap.gui.jmapviewer.MapPolygonImpl;
 import org.openstreetmap.gui.jmapviewer.interfaces.MapMarker;
 import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 
-import TP2.Solver.Algoritmo;
-
 public class GUIMAP {
 
 	private GUIMAP _this;
@@ -78,7 +76,7 @@ public class GUIMAP {
 	private JButton btnNuevoTramo;
 	private JSpinner inputPeso;
 	private JToolBar toolBar;
-	private Timer t;
+	private Timer timerMensaje;
 	private final int radioTolerancia = 6;
 	private final Color camino = Color.red;
 	private final Color noSelec = Color.green;
@@ -86,6 +84,7 @@ public class GUIMAP {
 	private JPanel panelMensaje;
 	private JLabel lblMensaje;
 	private JPanel panelGrafico;
+	private JPanel chart;
 	private JFreeChart grafico;
 	private JButton btnEditar;
 	private ArrayList<Integer> solucionActual = new ArrayList<Integer>();
@@ -94,8 +93,10 @@ public class GUIMAP {
 	private JButton btnStop;
 	private JLabel lblActual;
 	private XYSeries busquedaLocal;
-	private XYSeries algoritmoEvolutivo;
 	private XYSeries algoritmoGoloso;
+	private XYSeries mejorSolucion;
+	private MapPolygonImpl recorrido;
+	private JButton btnContinuar;
 	
 	public static void main(String[] args) 
 	{
@@ -239,14 +240,9 @@ public class GUIMAP {
 		btnAGoloso.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent arg0) 
-			{//TODO: esto es un asco
+			{
 				solucionActual = Solucion.recorridoGoloso(grafo).getRecorridoList();
-				List<Coordinate> lista = new ArrayList<Coordinate>();
-				for(Integer i : solucionActual)
-					lista.add(new Coordinate(grafo.get(i).getLat(),grafo.get(i).getLon()));
-				MapPolygonImpl recorrido = new MapPolygonImpl(lista);
-				recorrido.setColor(Color.cyan);
-				mapa.addMapPolygon(recorrido);
+				mostrarSolucion();
 			}
 		});
 		btnAGoloso.setFocusable(false);
@@ -261,10 +257,9 @@ public class GUIMAP {
 		{
 			public void actionPerformed(ActionEvent arg0) 
 			{	
-				if(solver != null)
-					solver.stop();	
+				if(solver == null)
+					solver = new Solver(grafo, 100, 5, _this);
 				clearDataset();
-				solver = new Solver(grafo, 100, 5, _this);
 				solver.start();
 			}
 		});
@@ -274,27 +269,6 @@ public class GUIMAP {
 								.getColor("Button.background"), null, null));
 		btnBLocal.setAlignmentY(1.0f);
 		toolBar.add(btnBLocal);
-		
-		btnStop = new JButton("Stop");
-		btnStop.addActionListener(new ActionListener() 
-		{
-			public void actionPerformed(ActionEvent e) 
-			{
-				solucionActual = solver.stop().getRecorridoList();
-				List<Coordinate> lista = new ArrayList<Coordinate>();
-				for(Integer i : solucionActual)
-					lista.add(new Coordinate(grafo.get(i).getLat(),grafo.get(i).getLon()));
-				MapPolygonImpl recorrido = new MapPolygonImpl(lista);
-				recorrido.setColor(camino);
-				mapa.addMapPolygon(recorrido);
-			}
-		});
-		btnStop.setFocusable(false);
-		btnStop.setBorder(new BevelBorder(BevelBorder.RAISED, UIManager
-										.getColor("Button.background"), UIManager
-										.getColor("Button.background"), null, null));
-		btnStop.setAlignmentY(1.0f);
-		toolBar.add(btnStop);
 
 		btnEditar.addActionListener(new ActionListener() 
 		{
@@ -406,20 +380,77 @@ public class GUIMAP {
 		
 
 		grafico = org.jfree.chart.ChartFactory.createXYLineChart("grafico", "x", "y", createDataset(), PlotOrientation.VERTICAL, true, true, false);
+		
+		
 		XYPlot plot = grafico.getXYPlot();
 		XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-		
 		plot.setRenderer(renderer);
-		panelGrafico = new ChartPanel(grafico);
-		panelGrafico.setBounds(50, 73, 256, 160);
-		panelGrafico.setBorder(new BevelBorder(BevelBorder.RAISED, null, null,
-				null, null));
-		panelGrafico.setVisible(true);
+		mapa.setLayout(null);
+		
+		
+		
+		chart = new ChartPanel(grafico);
+		chart.setBounds(2, 2, 252, 156);
+		chart.setBorder(null);
+		chart.setVisible(true);
+		
+		
+		panelGrafico = new JPanel();
+		panelGrafico.setBounds(50, 73, 256, 192);
+		panelGrafico.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
+		panelGrafico.setVisible(false);
 		mapa.setLayout(null);
 		mapa.add(panelGrafico);
 		panelGrafico.setLayout(null);
+		panelGrafico.add(chart);
+		
+		btnStop = new JButton("Stop");
+		btnStop.setBounds(11, 163, 27, 19);
+		panelGrafico.add(btnStop);
+		btnStop.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{
+				solucionActual = solver.stop().getRecorridoList();
+				mostrarSolucion();
+			}
+		});
+		
+		btnStop.setFocusable(false);
+		btnStop.setBorder(new BevelBorder(BevelBorder.RAISED, UIManager
+										.getColor("Button.background"), UIManager
+										.getColor("Button.background"), null, null));
+		btnStop.setAlignmentY(1.0f);
+		
+		btnContinuar = new JButton("Continuar");
+		btnContinuar.setFocusable(false);
+		btnContinuar.setBorder(new BevelBorder(BevelBorder.RAISED, UIManager
+										.getColor("Button.background"), UIManager
+										.getColor("Button.background"), null, null));
+		btnContinuar.setAlignmentY(1.0f);
+		btnContinuar.setBounds(55, 163, 27, 19);
+		panelGrafico.add(btnContinuar);
+		
+		JButton btnACorrer = new JButton("A Correr!");
+		btnACorrer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				lanzarJuego();
+			}
+		});
+		btnACorrer.setBounds(157, 161, 89, 23);
+		panelGrafico.add(btnACorrer);
 		
 		
+		btnContinuar.addActionListener(new ActionListener() 
+		{
+			public void actionPerformed(ActionEvent e) 
+			{
+				if(solver.stopped())
+					solver.start();
+			}
+		});
+		
+		grafico.setBackgroundPaint(UIManager.getColor("Button.background"));
 		
 		
 		JLabel lblIconoInfo = new JLabel("");
@@ -459,7 +490,7 @@ public class GUIMAP {
 		frame.setFocusable(true);
 		frame.addKeyListener(new KeyListenerGlobal());
 
-		t = new Timer(1000 * 5, new ActionListener() 
+		timerMensaje = new Timer(1000 * 5, new ActionListener() 
 		{
 			@Override
 			public void actionPerformed(ActionEvent e) 
@@ -467,8 +498,8 @@ public class GUIMAP {
 				panelMensaje.setVisible(false);
 			}
 		});
-		t.setRepeats(false);
-
+		timerMensaje.setRepeats(false);
+		
 		actualizarMapa();
 	}
 	
@@ -497,18 +528,19 @@ public class GUIMAP {
 	}
 
 	
-	//TODO: mejorar
-	public void lanzarJuego() 
+	private void lanzarJuego() 
 	{	
-		if (ciudades.size() > 2) 
-		{		
+		if (!solucionActual.isEmpty()) 
+		{
 			ArrayList<Point> s = new ArrayList<Point>();
-			for (int i = 0; i < ciudades.size(); i++)
+			
+			for(int i : solucionActual)
 				s.add(mapa.getMapPosition(ciudades.get(i).getCoordinate(),false));
-
+			s.add(mapa.getMapPosition(ciudades.get(solucionActual.get(solucionActual.size()-1)).getCoordinate(),false));
+			
 			String[] args = new String[s.size()];
 			double[] coordenadas = new double[4];
-			for (int i = 0; i < s.size() - 1; i++) 
+			for (int i = 0; i < s.size() - 1; i++)
 			{
 				coordenadas[0] = s.get(i).getX();
 				coordenadas[1] = s.get(i).getY();
@@ -645,7 +677,7 @@ public class GUIMAP {
 		mensaje = ajustarString(mensaje);
 		lblMensaje.setText(mensaje);
 		panelMensaje.setVisible(true);
-		t.start();
+		timerMensaje.start();
 	}
 	private String ajustarString(String mensaje) 
 	{
@@ -891,36 +923,53 @@ public class GUIMAP {
 	private void cerrar() 
 	{
 		FileManager.guardarGrafo(grafo);
+		solver.stop();
 		frame.dispose();
 	}
 
-	public void setAvance(int iteracion, double y, Algoritmo usado)
+	public void setAvance(int iteracion, double y)
 	{
-		if(algoritmoGoloso.getItemCount()==2)
-		{
-			double aux = algoritmoGoloso.remove(1).getYValue();
-			algoritmoGoloso.add(iteracion, aux);
-		}
+		double goloso = Solucion.recorridoGoloso(grafo).getLongitud();
+		algoritmoGoloso.clear();
+		algoritmoGoloso.add(0, goloso);
+		algoritmoGoloso.add(iteracion, goloso);
 		
-		if(usado==Algoritmo.busquedaLocal)
-		{
-			busquedaLocal.add(iteracion, y);
-		}
+		mejorSolucion.clear();
+		double minimo = Math.min(goloso, busquedaLocal.getMinY());
+		mejorSolucion.add(0, minimo);
+		mejorSolucion.add(iteracion, minimo);
+		
+		busquedaLocal.add(iteracion, y);
+		
+		panelGrafico.setVisible(true);
 	}
 	private void clearDataset()
 	{
 		algoritmoGoloso.clear();
 		busquedaLocal.clear();
-		algoritmoEvolutivo.clear();
+		mejorSolucion.clear();
 	}
 	private XYDataset createDataset()
 	   {
 		algoritmoGoloso = new XYSeries("A. Goloso");
 		busquedaLocal = new XYSeries("B. Local");
-		algoritmoEvolutivo = new XYSeries("A. Evolutivo");
+		mejorSolucion = new XYSeries("Mejor Recorrido");
 		XYSeriesCollection dataset = new XYSeriesCollection();
 		dataset.addSeries(busquedaLocal);
-		dataset.addSeries(algoritmoEvolutivo);
+		dataset.addSeries(algoritmoGoloso);
+		dataset.addSeries(mejorSolucion);
 		return dataset;
 	   }
+
+	private void mostrarSolucion() {
+		mapa.removeMapPolygon(recorrido);
+		List<Coordinate> lista = new ArrayList<Coordinate>();
+		for(Integer i : solucionActual)
+			lista.add(new Coordinate(grafo.get(i).getLat(),grafo.get(i).getLon()));
+		for(int i = solucionActual.size()-2; i>=0; i--)
+			lista.add(new Coordinate(grafo.get(solucionActual.get(i)).getLat(),grafo.get(solucionActual.get(i)).getLon()));
+		recorrido = new MapPolygonImpl(lista);
+		recorrido.setColor(camino);
+		mapa.addMapPolygon(recorrido);
+	}
 }

@@ -1,9 +1,7 @@
 package TP2;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 
 public class Solucion implements Comparable<Solucion>{
 
@@ -13,7 +11,7 @@ public class Solucion implements Comparable<Solucion>{
 	// Longitud del recorrido
 	private double longitud;
 	// variable global usada para verificar que no se repitan vertices en un recorrido
-	private Set<Integer> usados;
+	private boolean[] usados;
 
 	// solucion "vacia"
 	private Solucion(Grafo g) 
@@ -25,9 +23,9 @@ public class Solucion implements Comparable<Solucion>{
 			for(int j = i+1; j < ciudades.size(); j++ )
 				if(!instancia.existeArista(i, j))
 				{
-					double c_1 = Math.abs(ciudades.get(i).getLat()-ciudades.get(j).getLat());
-					double c_2 = Math.abs(ciudades.get(i).getLon()-ciudades.get(j).getLon());
-					double calculo = (Math.sqrt(c_1*c_1 + c_2*c_2)); 
+					double c_1 = ciudades.get(i).getLat()-ciudades.get(j).getLat();
+					double c_2 = ciudades.get(i).getLon()-ciudades.get(j).getLon();
+					double calculo = (Math.sqrt((c_1*c_1) + (c_2*c_2))); 
 					instancia.agregarArista(i, j, (int) (calculo*111));
 				}
 		
@@ -45,20 +43,20 @@ public class Solucion implements Comparable<Solucion>{
 		Solucion ret = new Solucion(instancia);
 
 		ret.recorrido[0] = inicial;
-		ret.usados = new HashSet<Integer>();
-		ret.usados.add(inicial);
+		ret.usados = new boolean[instancia.getSize()];
+		ret.usados[inicial]=true;
 
-		for (int i = 1; i < ret.recorrido.length; i++) {
-			int cercana = ret.ciudadMasCercana(i-1, cantidadAleatorias);
-			ret.usados.add(cercana);
+		for (int i = 1; i < ret.recorrido.length; i++) 
+		{	
+			int cercana = ret.ciudadMasCercana(ret.recorrido[i-1], cantidadAleatorias);
+			ret.usados[cercana]=true;
 			ret.recorrido[i] = cercana;
 			ret.longitud += ret.instancia.pesoArista(ret.recorrido[i - 1],
 					ret.recorrido[i]);
 		}
-
+		
 		ret.longitud += ret.instancia.pesoArista(
 				ret.recorrido[ret.recorrido.length - 1], ret.recorrido[0]);
-
 		return ret;
 	}
 
@@ -66,47 +64,56 @@ public class Solucion implements Comparable<Solucion>{
 		return recorridoGolosoAleatorizado(instancia, 0 ,1);
 	}
 	// Retorna la ciudad mas cercana no utilizada antes
+	private int ciudadMasCercana(int desde)
+	{
+ 		int ret = -1;
+ 		int distanciaMinima = Integer.MAX_VALUE;
+ 		for(int i = 0; i < recorrido.length; i++)
+ 		{
+ 			int distanciaConI = instancia.pesoArista(desde, i);
+ 			
+ 			if(!usados[i] && distanciaConI<distanciaMinima){
+ 				distanciaMinima = distanciaConI;
+ 				ret = i;
+ 			}
+ 		}
+ 		return ret;		
+	}
+
 	private int ciudadMasCercana(int desde, int cantidadAleatorias) 
 	{
-
 		if (cantidadAleatorias < 1)
 			throw new IllegalArgumentException(
 					"La cantidad de minimos aleatorios especificada es invalida:"
 							+ cantidadAleatorias);
 
 		int[] elegidos = new int[cantidadAleatorias];
-		int[] distanciasMinimas = new int[cantidadAleatorias];
 
 		for (int i = 0; i < cantidadAleatorias; i++) 
 		{
-			elegidos[i] = -1;
-			distanciasMinimas[i] = Integer.MAX_VALUE;
+			elegidos[i] = ciudadMasCercana(desde);
+			if(elegidos[i]!=-1)
+				usados[elegidos[i]]=true;
 		}
-
-		for (int i = 0; i < instancia.getSize(); i++) 
-		{ 
-
-			if (!usados.contains(i))
-			{
-				int distanciaCiudadActual = instancia.pesoArista(desde, i);
-				for (int j = 0; j < cantidadAleatorias; j++)
-					if (distanciaCiudadActual <= distanciasMinimas[j]) 
-					{
-						distanciasMinimas[j] = distanciaCiudadActual;
-						elegidos[j] = i;
-						j = cantidadAleatorias;
-					}
-			}
-		}
+		
 		int indiceMaximo = 0;
 		for (int i = 0; i < cantidadAleatorias; i++)
 			if (elegidos[i] != -1)
 				indiceMaximo = i;
 
 		Random r = new Random();
-
-		return elegidos[r.nextInt(indiceMaximo + 1)];
+		int ret = elegidos[r.nextInt(indiceMaximo+1)];
+		
+		for (int i = 0; i < cantidadAleatorias; i++) 
+		{
+			if(elegidos[i]!=-1)
+				usados[elegidos[i]]=false;
+		}
+		
+		return ret;
 	}
+
+
 
 	
 	public Solucion mejorSwap(){
@@ -120,8 +127,8 @@ public class Solucion implements Comparable<Solucion>{
 		return ret;
 	}
 	
-	//TODO: necesitamos testear
-	public Solucion mejorarSwap() {
+	public Solucion mejorarSwap() 
+	{
 		Solucion ret = clone();
 		Solucion aux;
 		for (int i = 0; i < recorrido.length; i++)
@@ -152,7 +159,7 @@ public class Solucion implements Comparable<Solucion>{
 		longitud += calcularLongitud(i);
 		longitud += calcularLongitud(j);
 	}
-
+	
 	private void chequearIndice(int i) {
 		if (i >= recorrido.length || i < 0)
 			throw new IndexOutOfBoundsException(
@@ -224,5 +231,4 @@ public class Solucion implements Comparable<Solucion>{
 		
 		return ret;
 	}
-	
 }

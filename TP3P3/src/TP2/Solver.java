@@ -9,7 +9,8 @@ public class Solver implements Runnable {
 	private int iteraciones, cantAleatorias;
 	private Solucion mejorHastaAhora;
 	private Thread t;
-	public enum Algoritmo {busquedaLocal, evolutivo};
+	private int iteracion;
+	private Solucion solucionActual;
 
 	public Solver(Grafo instancia, int solucionesIniciales, int cantidadAleatorias, GUIMAP interfaz)
 	{
@@ -18,42 +19,55 @@ public class Solver implements Runnable {
 		this.instancia = instancia;
 		this.iteraciones = solucionesIniciales;
 		this.cantAleatorias = cantidadAleatorias;
+		mejorHastaAhora = Solucion.recorridoGoloso(instancia);
+		iteracion = 0;
+		solucionActual = mejorHastaAhora;
 	}
 	
 	@Override
 	public void run() 
 	{
-		mejorHastaAhora = Solucion.recorridoGoloso(instancia);
-		System.out.println(mejorHastaAhora.getLongitud());
-		Solucion aux;
-		int iteracion = 0;
 		for (int i = 0; i != iteraciones && !parar; i++)
-		{
-			aux = Solucion.recorridoGolosoAleatorizado(instancia, 0, cantAleatorias);
-			while (aux != null && !parar) 
+		{	
+			while (solucionActual != null && !parar) 
 			{	
-				iteracion++;
-				interfaz.setAvance(iteracion, aux.getLongitud(), Algoritmo.busquedaLocal);
-				if(aux.getLongitud()<mejorHastaAhora.getLongitud())
+				if(solucionActual.getLongitud()<mejorHastaAhora.getLongitud())
 				{
-					mejorHastaAhora = aux;
+					mejorHastaAhora = solucionActual;
 				}
-				aux = aux.mejorarSwap();
+				iteracion++;
+				interfaz.setAvance(iteracion, solucionActual.getLongitud());
+				solucionActual = solucionActual.mejorarSwap();
 			}
+			solucionActual = Solucion.recorridoGolosoAleatorizado(instancia, 0, cantAleatorias);
 		}
 	}
 	
 	public void start()
 	{
-		if(t==null){
+		parar = false;
+		if(t!=null)
+		{
+			t.interrupt();
+		}
 		t = new Thread(this);
 		t.start();
-		}
+	}
+	
+	public Solucion getMejorHastaAhora()
+	{
+		return mejorHastaAhora.clone();
 	}
 	
 	public Solucion stop()
 	{
 		parar = true;
-		return mejorHastaAhora;
+		t.interrupt();
+		return getMejorHastaAhora();
+	}
+	
+	public boolean stopped()
+	{
+		return parar;
 	}
 }

@@ -29,14 +29,18 @@ public class Grafo implements Serializable {
 	}
 
 	// Agregar una arista
-	public boolean agregarArista(int i, int j, Integer peso) {
+	public boolean agregarArista(int i, int j, Integer peso) 
+	{
 		chequearArista(estaciones.get(i), estaciones.get(j),peso);
 
 		estaciones.get(i).agregarArista(estaciones.get(j), peso);
-		return estaciones.get(j).agregarArista(estaciones.get(i), peso);
+		boolean ret = estaciones.get(j).agregarArista(estaciones.get(i), peso);
+		
+		return ret;
 	}
 
-	public void agregarArista(Ciudad i, Ciudad j, Integer peso) {
+	public void agregarArista(Ciudad i, Ciudad j, Integer peso) 
+	{
 		chequearArista(i, j,peso);
 		
 		i.agregarArista(j, peso);
@@ -118,6 +122,10 @@ public class Grafo implements Serializable {
 		return a.pesoArista(b);
 	}
 	public int pesoArista(int a, int b){
+		if(Math.max(a, b)>=estaciones.size())
+			throw new IndexOutOfBoundsException("Indice "+Math.max(a, b)+ " fuera del limite");
+		if(Math.min(a, b)<0)
+			throw new IndexOutOfBoundsException("Indice "+Math.min(a, b)+ " fuera del limite");
 		return estaciones.get(a).pesoArista(estaciones.get(b));
 	}
 
@@ -200,6 +208,10 @@ public class Grafo implements Serializable {
 		Grafo ret = new Grafo();
 		for(Ciudad c : estaciones)
 			ret.agregarEstacion(c.clonar());
+		
+		for(int i = 0; i < estaciones.size(); i++) for(int j = i+1; j < estaciones.size(); j++)
+			if(this.existeArista(i, j))
+				ret.agregarArista(i, j, pesoArista(i, j));
 		
 		return ret;
 	}

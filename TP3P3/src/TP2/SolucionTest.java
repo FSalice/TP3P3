@@ -13,26 +13,26 @@ public class SolucionTest
 	
 	@Test
 	public void swapTest()
-	{				//0,2,3,1
-		chequearSwap("0,3,2,1","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",1,2);
-		chequearSwap("3,2,0,1","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",0,2);
-		chequearSwap("0,2,1,3","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",3,2);
-		chequearSwap("0,2,1,3","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",2,3);
-		chequearSwap("1,2,3,0","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",0,3);
-		chequearSwap("0,2,3,1","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",2,2);
+	{				//0,2,1,3
+		chequearSwap("0,1,2,3","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",1,2);
+		chequearSwap("1,2,0,3","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",0,2);
+		chequearSwap("0,2,3,1","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",3,2);
+		chequearSwap("0,2,3,1","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",2,3);
+		chequearSwap("3,2,1,0","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",0,3);
+		chequearSwap("0,2,1,3","4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1",2,2);
 	}
 	private void chequearSwap(String resultadoEsperado, String grafo, int i, int j)
 	{
 		int[] esperado = recorrido(resultadoEsperado);
 		Grafo g = generarInstancia(grafo);
-		Solucion s = Solucion.recorridoGolosoAleatorizado(g,0,1);
+		Solucion s = Solucion.recorridoGoloso(g);
 		s.swap(i, j);
 		int longitudReal=0;
 		int aristas = s.getRecorrido().length;
 		
-		for(int indice = 0; indice < aristas; indice++)
-			assertEquals(s.getRecorrido()[indice], esperado[indice]);
-		
+		for(int indice = 0; indice < aristas; indice++){
+			assertEquals(esperado[indice], s.getRecorrido()[indice]);
+		}
 		
 		for(int indice = 1; indice < aristas; indice++)
 			longitudReal += g.pesoArista(s.getRecorrido()[indice-1], s.getRecorrido()[indice]);
@@ -47,28 +47,29 @@ public class SolucionTest
 		chequearLongitudGoloso(30, "3 0,1,10 ; 1,2,10 ; 2,0,10");
 		chequearLongitudGoloso(40, "4 0,1,10 ; 1,2,10 ; 2,3,10; 3,0,10");
 		chequearLongitudGoloso(22, "4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1" );
-		chequearLongitudGoloso(4, "4 0,1,1 ; 1,2,1 ; 2,3,1 ; 3,0,13 ; 0,2,1 ; 3,1,1" );
+		chequearLongitudGoloso(4, "4 0,1,1 ; 1,2,1 ; 2,3,1 ; 3,0,1 ; 0,2,1 ; 3,1,1" );
 	}
 	
 	private void chequearLongitudGoloso(int longitudEsperada, String grafo)
 	{
 		Grafo g = generarInstancia(grafo);
-		Solucion s = Solucion.recorridoGolosoAleatorizado(g,0,1);
+		Solucion s = Solucion.recorridoGoloso(g);
 		assertEquals(longitudEsperada,s.getLongitud(),0.000001);
 	}
 	
 	@Test
 	public void recorridoGolosoTest() 
 	{
-		chequearRecorridoGoloso("0,2,1,0", "3 0,1,10 ; 1,2,10 ; 2,0,10");
-		chequearRecorridoGoloso("0,3,2,1,0", "4 0,1,10 ; 1,2,10 ; 2,3,10; 3,0,10");
-		chequearRecorridoGoloso("0,2,3,1,0", "4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1" );
+		chequearRecorridoGoloso("0,1,2,0", "3 0,1,10 ; 1,2,10 ; 2,0,10");
+		chequearRecorridoGoloso("0,1,2,3,0", "4 0,1,10 ; 1,2,10 ; 2,3,10; 3,0,10");
+		chequearRecorridoGoloso("0,1,3,2,0", "4 0,2,10 ; 2,3,10 ; 3,1,10; 1,0,10");
+		chequearRecorridoGoloso("0,2,1,3,0", "4 0,1,10 ; 1,2,10 ; 2,3,10 ; 3,0,10 ; 0,2,1 ; 3,1,1" );
 	}
 
 	private void chequearRecorridoGoloso(String recorridoEsperado, String grafo)
 	{
 		Grafo g = generarInstancia(grafo);
-		Solucion s = Solucion.recorridoGolosoAleatorizado(g,0,1);
+		Solucion s = Solucion.recorridoGoloso(g);
 		int[] esperado = recorrido(recorridoEsperado);
 		int[] obtenido = s.getRecorrido();
 		
@@ -88,7 +89,7 @@ public class SolucionTest
 		int tamaño = Integer.parseInt(m.group());
 		for(int i = 0; i < tamaño; i++)
 		{
-			ret.agregarEstacion(new Ciudad(""+i, 0, 0));
+			ret.agregarEstacion(new Ciudad(""+i, i*10000, i*10000));
 		}
 		
 		//creo aristas con los pesos indicados
