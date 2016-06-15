@@ -1,5 +1,6 @@
 package TP2;
 
+import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -229,6 +230,76 @@ public class Solucion implements Comparable<Solucion>{
 		
 		ret+= " - " + getLongitud();
 		
+		return ret;
+	}
+	
+	public Solucion mejorarCruzados()
+	{
+		Solucion ret = clone();
+		for(int i = 0; i < recorrido.length-1; i++)
+			for(int j = 0; j < recorrido.length-1; j++)
+				if(Math.abs(i-j) > 1 && Math.abs(i-j) < recorrido.length 
+				&& cruzados(ret.recorrido[i], ret.recorrido[i+1], ret.recorrido[j], ret.recorrido[j+1]))
+				{
+					eliminarCruzamiento(i, i+1, j, j+1);
+				}
+		//TODO: faltan casos de borde
+		return ret;
+	}
+	
+	
+	private boolean cruzados(int a_1, int a_2, int b_1, int b_2)
+	{
+		Line2D.Double arista_1 = new Line2D.Double(instancia.get(a_1).getLat(),
+				instancia.get(a_1).getLon(),
+				instancia.get(a_2).getLat(),
+				instancia.get(a_2).getLon());
+		Line2D.Double arista_2 = new Line2D.Double(instancia.get(b_1).getLat(),
+				instancia.get(b_1).getLon(),
+				instancia.get(b_2).getLat(),
+				instancia.get(b_2).getLon());
+		return arista_1.intersectsLine(arista_2);
+	}
+	
+	private Solucion eliminarCruzamiento(int a_1, int a_2, int b_1, int b_2)
+	{
+		Solucion mejor;
+		
+		int inda_1 = -1, indb_1 = -1, indb_2 = -1;
+		for(int i = 0; i < recorrido.length; i++)
+		{
+			if(recorrido[i]==a_1) inda_1 = i;
+			if(recorrido[i]==b_1) indb_1 = i;
+			if(recorrido[i]==b_2) indb_2 = i; 
+		}
+		
+		Solucion aux = descruzar(inda_1,indb_1);
+		mejor = this.longitud>aux.longitud ? aux : this;
+		
+		aux = descruzar(indb_1, inda_1);
+		mejor = mejor.longitud>aux.longitud ? aux : mejor;
+		
+		aux = descruzar(inda_1, indb_2);
+		mejor = mejor.longitud>aux.longitud ? aux : mejor;
+		
+		aux = descruzar(indb_2, inda_1);
+		mejor = mejor.longitud>aux.longitud ? aux : mejor;
+		
+		return mejor;
+	}
+
+	private Solucion descruzar(int i, int j) {
+		Solucion ret = clone();
+		while(Math.abs(i-j)>1)
+		{
+			if(j<0) j = recorrido.length-1;
+			if(i == recorrido.length) i = 0;
+			
+			ret.swap(i, j);
+			
+			i++;
+			j--;
+		}
 		return ret;
 	}
 }

@@ -923,25 +923,28 @@ public class GUIMAP {
 	private void cerrar() 
 	{
 		FileManager.guardarGrafo(grafo);
-		solver.stop();
+		if(solver!=null)
+			solver.stop();
 		frame.dispose();
 	}
 
 	public void setAvance(int iteracion, double y)
 	{
+		panelGrafico.setIgnoreRepaint(true);
 		double goloso = Solucion.recorridoGoloso(grafo).getLongitud();
-		algoritmoGoloso.clear();
+		
 		algoritmoGoloso.add(0, goloso);
 		algoritmoGoloso.add(iteracion, goloso);
 		
-		mejorSolucion.clear();
 		double minimo = Math.min(goloso, busquedaLocal.getMinY());
+		
 		mejorSolucion.add(0, minimo);
 		mejorSolucion.add(iteracion, minimo);
 		
 		busquedaLocal.add(iteracion, y);
 		
 		panelGrafico.setVisible(true);
+		panelGrafico.setIgnoreRepaint(false);
 	}
 	private void clearDataset()
 	{
