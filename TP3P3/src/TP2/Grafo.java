@@ -6,35 +6,35 @@ import java.util.ArrayList;
 import org.openstreetmap.gui.jmapviewer.interfaces.ICoordinate;
 
 /**
- * Representa el grafo como una lista de Estacion y 
+ * Representa el grafo como una lista de ciudades y 
  * las herramientas para manipularlo y calcular 
  * Caminos minimos en base al costo o a la cantidad de trasbordos
  */
 public class Grafo implements Serializable {
 	private static final long serialVersionUID = 1L;
 	// Representamos el grafo por listas de vecinos
-	private ArrayList<Ciudad> estaciones;
+	private ArrayList<Ciudad> ciudades;
 	private boolean[] out;
 
 	/**
 	 * Se construye un grafo vacio
 	 */
 	public Grafo() {
-		estaciones = new ArrayList<Ciudad>();
+		ciudades = new ArrayList<Ciudad>();
 	}
 
 	@Override
 	public String toString() {
-		return estaciones.toString();
+		return ciudades.toString();
 	}
 
 	// Agregar una arista
 	public boolean agregarArista(int i, int j, Integer peso) 
 	{
-		chequearArista(estaciones.get(i), estaciones.get(j),peso);
+		chequearArista(ciudades.get(i), ciudades.get(j),peso);
 
-		estaciones.get(i).agregarArista(estaciones.get(j), peso);
-		boolean ret = estaciones.get(j).agregarArista(estaciones.get(i), peso);
+		ciudades.get(i).agregarArista(ciudades.get(j), peso);
+		boolean ret = ciudades.get(j).agregarArista(ciudades.get(i), peso);
 		
 		return ret;
 	}
@@ -63,15 +63,15 @@ public class Grafo implements Serializable {
 	}
 	
 	public boolean existeArista(int i, int j) {
-		chequearArista(estaciones.get(i), estaciones.get(j),0);
+		chequearArista(ciudades.get(i), ciudades.get(j),0);
 
-		return estaciones.get(i).conectado(estaciones.get(j));
+		return ciudades.get(i).conectado(ciudades.get(j));
 	}
 
 	// Código defensivo: Chequea que los parámetros sean válidos
 	private void chequearVertice(Ciudad i) {
-		if (!estaciones.contains(i))
-			throw new IllegalArgumentException("La estacion " + i
+		if (!ciudades.contains(i))
+			throw new IllegalArgumentException("La ciudad " + i
 					+ " no esta contenida en el grafo!");
 	}
 
@@ -85,14 +85,14 @@ public class Grafo implements Serializable {
 			throw new IllegalArgumentException("No se pueden agregar aristas con peso negativo!");
 	}
 
-	public void agregarEstacion(Ciudad e) {
-		estaciones.add(e);
+	public void agregarCiudad(Ciudad e) {
+		ciudades.add(e);
 	}
 
-	public void eliminarEstacion(int i) {
-		Ciudad aux = estaciones.get(i);
-		estaciones.remove(i);
-		for (Ciudad j : estaciones) {
+	public void eliminarCiudad(int i) {
+		Ciudad aux = ciudades.get(i);
+		ciudades.remove(i);
+		for (Ciudad j : ciudades) {
 			if (j.conectado(aux)) {
 				j.eliminarArista(aux);
 			}
@@ -100,20 +100,20 @@ public class Grafo implements Serializable {
 	}
 
 	public void eliminarAristas(ICoordinate inicio, ICoordinate fin) {
-		for (Ciudad i : estaciones) {
+		for (Ciudad i : ciudades) {
 			i.eliminarArista(inicio, fin);
 		}
 	}
 
 	public void editarArista(ICoordinate inicio, ICoordinate fin, int nuevoPeso) {
-		for (Ciudad i : estaciones) {
+		for (Ciudad i : ciudades) {
 			i.editarArista(inicio, fin, nuevoPeso);
 		}
 	}
 
 	public int getAristas() {
 		int aristas = 0;
-		for (Ciudad i : estaciones)
+		for (Ciudad i : ciudades)
 			aristas = aristas + i.getAristas();
 		return aristas / 2;
 	}
@@ -122,37 +122,37 @@ public class Grafo implements Serializable {
 		return a.pesoArista(b);
 	}
 	public int pesoArista(int a, int b){
-		if(Math.max(a, b)>=estaciones.size())
+		if(Math.max(a, b)>=ciudades.size())
 			throw new IndexOutOfBoundsException("Indice "+Math.max(a, b)+ " fuera del limite");
 		if(Math.min(a, b)<0)
 			throw new IndexOutOfBoundsException("Indice "+Math.min(a, b)+ " fuera del limite");
-		return estaciones.get(a).pesoArista(estaciones.get(b));
+		return ciudades.get(a).pesoArista(ciudades.get(b));
 	}
 
 	public Ciudad get(int i) {
-		return estaciones.get(i);
+		return ciudades.get(i);
 	}
 
-	public void editarEstacion(int i, String nuevoNombre) {
-		estaciones.get(i).editar(nuevoNombre);
+	public void editarCiudad(int i, String nuevoNombre) {
+		ciudades.get(i).editar(nuevoNombre);
 	}
 	
 	public ArrayList<Integer> caminoMinimo(Ciudad inicio,
 			Ciudad destino, boolean porPeso){
-		int indiceActual = estaciones.indexOf(inicio);
-		int indiceDestino = estaciones.indexOf(destino);
+		int indiceActual = ciudades.indexOf(inicio);
+		int indiceDestino = ciudades.indexOf(destino);
 		
 		ArrayList<int[]> pesoYnodo = new ArrayList<int[]>();
-		for (int i = 0; i < estaciones.size(); i++) {
+		for (int i = 0; i < ciudades.size(); i++) {
 			pesoYnodo.add(new int[] { Integer.MAX_VALUE, -1 });
 		}
 		
 		pesoYnodo.set(indiceActual, new int[]{0,-1});
 		
-		out = new boolean[estaciones.size()];
+		out = new boolean[ciudades.size()];
 		
 		while(indiceActual!=indiceDestino && indiceActual != -1){
-			dijkstra(estaciones.get(indiceActual), pesoYnodo);
+			dijkstra(ciudades.get(indiceActual), pesoYnodo);
 			indiceActual = minimo(pesoYnodo);
 		}
 		
@@ -170,14 +170,14 @@ public class Grafo implements Serializable {
 		}
 	}
 	
-	private void dijkstra(Ciudad estacionActual, ArrayList<int[]> pesoYnodo){
-		int indice = estaciones.indexOf(estacionActual);
+	private void dijkstra(Ciudad ciudadActual, ArrayList<int[]> pesoYnodo){
+		int indice = ciudades.indexOf(ciudadActual);
 		out[indice] = true;
-		for(Ciudad e : estacionActual.getVecinos()){
-			int indiceE = estaciones.indexOf(e);
+		for(Ciudad e : ciudadActual.getVecinos()){
+			int indiceE = ciudades.indexOf(e);
 			if(!out[indiceE]){
-					if (pesoYnodo.get(indiceE)[0] > pesoYnodo.get(indice)[0] + estacionActual.pesoArista(e)) {
-						pesoYnodo.get(indiceE)[0] = pesoYnodo.get(indice)[0] + estacionActual.pesoArista(e); // peso
+					if (pesoYnodo.get(indiceE)[0] > pesoYnodo.get(indice)[0] + ciudadActual.pesoArista(e)) {
+						pesoYnodo.get(indiceE)[0] = pesoYnodo.get(indice)[0] + ciudadActual.pesoArista(e); // peso
 						pesoYnodo.get(indiceE)[1] = indice; // nodo
 				}
 			}
@@ -195,21 +195,21 @@ public class Grafo implements Serializable {
 		return ret;
 	}
 
-	public ArrayList<Ciudad> getEstaciones() {
-		return estaciones;
+	public ArrayList<Ciudad> getCiudades() {
+		return ciudades;
 	}
 	
 	public int getSize(){
-		return estaciones.size();
+		return ciudades.size();
 	}
 	
 	public Grafo clonar()
 	{
 		Grafo ret = new Grafo();
-		for(Ciudad c : estaciones)
-			ret.agregarEstacion(c.clonar());
+		for(Ciudad c : ciudades)
+			ret.agregarCiudad(c.clonar());
 		
-		for(int i = 0; i < estaciones.size(); i++) for(int j = i+1; j < estaciones.size(); j++)
+		for(int i = 0; i < ciudades.size(); i++) for(int j = i+1; j < ciudades.size(); j++)
 			if(this.existeArista(i, j))
 				ret.agregarArista(i, j, pesoArista(i, j));
 		

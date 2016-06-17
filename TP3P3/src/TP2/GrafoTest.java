@@ -21,7 +21,7 @@ public class GrafoTest
 		e = new Ciudad[6];
 		for(int i = 0; i < e.length; i++){
 			e[i] = new Ciudad(""+i, i, i);
-			_grafo.agregarEstacion(e[i]);
+			_grafo.agregarCiudad(e[i]);
 		}
 		_grafo.agregarArista(e[0], e[1],1);
 		_grafo.agregarArista(e[1], e[2],1);
@@ -95,7 +95,7 @@ public class GrafoTest
 		Grafo repetido = new Grafo();
 
 		for(int i = 0; i < e.length; i++){
-			repetido.agregarEstacion(e[i]);
+			repetido.agregarCiudad(e[i]);
 		}
 		repetido.agregarArista(e[0], e[1],1);
 		repetido.agregarArista(e[2], e[1],1);
@@ -144,12 +144,12 @@ public class GrafoTest
 			Grafo ret = new Grafo();
 			e = new Ciudad[11];
 			for(int i = 0; i < 10; i++){
-				e[i] = new Ciudad("Estacion "+i, Math.random()*500, Math.random()*500);
+				e[i] = new Ciudad("ciudad "+i, Math.random()*500, Math.random()*500);
 			}
-			e[10] = new Ciudad("Estacion 10", Math.random()*500, Math.random()*500);
+			e[10] = new Ciudad("ciudad 10", Math.random()*500, Math.random()*500);
 			
 			for(Ciudad e : e){
-				ret.agregarEstacion(e);
+				ret.agregarCiudad(e);
 			}
 			
 			for(int i = 0; i < 4; i++){

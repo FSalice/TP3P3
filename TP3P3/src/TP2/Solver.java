@@ -19,7 +19,7 @@ public class Solver implements Runnable {
 		this.instancia = instancia;
 		this.iteraciones = solucionesIniciales;
 		this.cantAleatorias = cantidadAleatorias;
-		mejorHastaAhora = Solucion.recorridoGoloso(instancia);
+		mejorHastaAhora = Solucion.recorridoGolosoAleatorizado(instancia, 0, cantAleatorias);
 		iteracion = 0;
 		solucionActual = mejorHastaAhora;
 	}
@@ -27,6 +27,10 @@ public class Solver implements Runnable {
 	@Override
 	public void run() 
 	{
+		busquedaLocal();
+	}
+	
+	private void busquedaLocal() {
 		for (int i = 0; i != iteraciones && !parar; i++)
 		{	
 			while (solucionActual != null && !parar) 
@@ -39,6 +43,7 @@ public class Solver implements Runnable {
 				interfaz.setAvance(iteracion, solucionActual.getLongitud());
 				solucionActual = solucionActual.mejorarSwap();
 			}
+			
 			solucionActual = Solucion.recorridoGolosoAleatorizado(instancia, 0, cantAleatorias);
 		}
 	}
@@ -62,7 +67,8 @@ public class Solver implements Runnable {
 	public Solucion stop()
 	{
 		parar = true;
-		t.interrupt();
+		if(t!=null)
+			t.interrupt();
 		return getMejorHastaAhora();
 	}
 	

@@ -5,17 +5,16 @@ import java.util.ArrayList;
 
 import org.openstreetmap.gui.jmapviewer.interfaces.ICoordinate;
 
-public class Ciudad implements Serializable {//cambiaria estacion por ciudad la
+public class Ciudad implements Serializable {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private String nombre; //eliminaria linea y agregaria private boolean CiudadInicial;
+	private String nombre;
 	private double lat, lon;
 	private ArrayList<Ciudad> vecinos;
 	private ArrayList<Integer> pesos;
 
-	// private static boolean llegue;
 
 	Ciudad(String nombre, double lat, double lon) {
 		this.nombre = nombre;

@@ -89,7 +89,7 @@ public class SolucionTest
 		int tamaño = Integer.parseInt(m.group());
 		for(int i = 0; i < tamaño; i++)
 		{
-			ret.agregarEstacion(new Ciudad(""+i, i*10000, i*10000));
+			ret.agregarCiudad(new Ciudad(""+i, i*10000, i*10000));
 		}
 		
 		//creo aristas con los pesos indicados
