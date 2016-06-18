@@ -6,18 +6,17 @@ public class Solver implements Runnable {
 	private boolean parar;
 	private Grafo instancia;
 	private GUIMAP interfaz;
-	private int iteraciones, cantAleatorias;
+	private int cantAleatorias;
 	private Solucion mejorHastaAhora;
 	private Thread t;
 	private int iteracion;
 	private Solucion solucionActual;
 
-	public Solver(Grafo instancia, int solucionesIniciales, int cantidadAleatorias, GUIMAP interfaz)
+	public Solver(Grafo instancia, int cantidadAleatorias, GUIMAP interfaz)
 	{
 		this.interfaz = interfaz;
 		parar = false;
 		this.instancia = instancia;
-		this.iteraciones = solucionesIniciales;
 		this.cantAleatorias = cantidadAleatorias;
 		mejorHastaAhora = Solucion.recorridoGolosoAleatorizado(instancia, 0, cantAleatorias);
 		iteracion = 0;
@@ -31,7 +30,7 @@ public class Solver implements Runnable {
 	}
 	
 	private void busquedaLocal() {
-		for (int i = 0; i != iteraciones && !parar; i++)
+		while(!parar)
 		{	
 			while (solucionActual != null && !parar) 
 			{	

@@ -1016,7 +1016,7 @@ public class GUIMAP {
 	private void resetSolver() {
 		if(solver != null)
 			solver.stop();
-		solver = new Solver(grafo, 100, 5, _this);
+		solver = new Solver(grafo, 5, _this);
 		clearDataset();
 	}
 }
