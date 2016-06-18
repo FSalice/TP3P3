@@ -265,8 +265,11 @@ public class GUIMAP {
 		{
 			public void actionPerformed(ActionEvent arg0) 
 			{	
+				if(solver == null || solver.stopped())
+				{
 				resetSolver();
 				solver.start();
+				}
 			}
 		});
 		btnBLocal.setFocusable(false);
